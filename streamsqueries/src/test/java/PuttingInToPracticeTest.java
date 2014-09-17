@@ -5,12 +5,16 @@
 
 import java.util.*;
 import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
+
 import org.junit.*;
 
 import static java.util.stream.Collectors.*;
 import static org.junit.Assert.*;
+
+import static java.util.stream.Collectors.*;
 
 public class PuttingInToPracticeTest {
 
@@ -32,6 +36,9 @@ public class PuttingInToPracticeTest {
                 new Transaction(mario, 2012, 700),
                 new Transaction(alan, 2012, 950)
         );
+        
+        
+        
     }
 
     /*
@@ -44,9 +51,11 @@ public class PuttingInToPracticeTest {
     @Test
     public void testStream1(){
         //TODO: Find all transactions from year 2011 and sort them by value (small to high).
-        List<Transaction> transactionsYear2011 = new ArrayList<>();
-
-
+        List<Transaction> transactionsYear2011 =  
+        		transactions.stream()
+        			.filter(t -> t.getYear() == 2011)
+        			.sorted(Comparator.comparing(Transaction::getValue))
+        			.collect(Collectors.toList());
 
         assertEquals(300, transactionsYear2011.get(0).getValue());
         assertEquals(2011, transactionsYear2011.get(0).getYear());
@@ -60,9 +69,11 @@ public class PuttingInToPracticeTest {
     @Test
     public void testStream2(){
         //TODO: What are all the unique cities where the traders work?
-        List<String> cities = new ArrayList<>();
-
-
+        List<String> cities = transactions.stream()
+        		.map(Transaction::getTrader)
+        		.map(Trader::getCity)
+        		.distinct()
+        		.collect(Collectors.toList());
 
         assertEquals(2, cities.size());
         assertTrue(cities.contains("Cambridge"));
@@ -73,10 +84,13 @@ public class PuttingInToPracticeTest {
     @Test
     public void testStream3(){
         //TODO: Find all traders from Cambridge and sort them by name.
-        List<Trader> traders = new ArrayList<>();
-
-
-
+        List<Trader> traders = transactions.stream()
+        		.map(Transaction::getTrader)
+        		.filter(t -> t.getCity().equals("Cambridge"))
+        		.sorted(Comparator.comparing(Trader::getName))
+        		.distinct()
+        		.collect(Collectors.toList());
+        		
         assertEquals(3, traders.size());
         assertEquals("Alan",traders.get(0).getName());
         assertEquals("Brian",traders.get(1).getName());
@@ -86,10 +100,11 @@ public class PuttingInToPracticeTest {
     @Test
     public void testStream4(){
         //TODO: Return a string of all traders’ names sorted alphabetically.
-        String result = "";
-
-
-
+        String result = transactions.stream()
+        		.map(t -> t.getTrader().getName())
+        		.distinct()
+        		.sorted()
+        		.collect(Collectors.joining());
 
         assertEquals("AlanBrianMarioRaoul", result);
     }
@@ -97,18 +112,18 @@ public class PuttingInToPracticeTest {
     @Test
     public void testStream5(){
         //TODO: Are there any trader based in Milan?
-        boolean milan = false;
-
-
-
+        boolean milan = transactions.stream()
+        		.anyMatch(t -> t.getTrader().getCity().equals("Milan"));
+        		
         assertEquals(true, milan);
     }
 
     @Test
     public void testStream6(){
         //TODO: Update all transactions so that the traders from Milan are set to Cambridge.
-
-
+    	transactions.stream()
+    		.filter(t -> t.getTrader().getCity().equals("Milan"))
+    		.forEach(t -> t.getTrader().SetCity("Cambridge"));
 
         assertTrue(transactions.stream().allMatch(t -> "Cambridge".equals(t.getTrader().getCity())));
 
@@ -117,9 +132,9 @@ public class PuttingInToPracticeTest {
     @Test
     public void testStream7(){
         //TODO: What's the highest value in all the transactions?
-        int highestValue = 0;
-
-
+        int highestValue = transactions.stream()
+        		.mapToInt(Transaction::getValue)
+        		.max().getAsInt();
 
         assertEquals(1000, highestValue);
 
@@ -128,8 +143,9 @@ public class PuttingInToPracticeTest {
     @Test
     public void testStream8(){
         //TODO: What's the transaction with smallest value?
-        Transaction smallestTransaction = null;
-
+        Transaction smallestTransaction = transactions.stream()
+        		.sorted(Comparator.comparing(Transaction::getValue))
+        		.findFirst().get();
 
         assertEquals(transactions.get(0), smallestTransaction);
     }
@@ -137,34 +153,35 @@ public class PuttingInToPracticeTest {
     @Test
     public void testStream9(){
         //TODO: Group all Traders by City
-        Map<String, List<Trader>> tradersByCity = new HashMap<>();
+        Map<String, List<Trader>> tradersByCity = transactions.stream()
+        		.map(Transaction::getTrader)
+        		.distinct()
+        		.collect(groupingBy(Trader::getCity)); 
 
-
-        assertEquals(3, tradersByCity.get("Cambridge").size());
         assertEquals(1, tradersByCity.get("Milan").size());
-
-
+        assertEquals(3, tradersByCity.get("Cambridge").size());
     }
 
     @Test
     public void testStream10(){
         //TODO: Create a Map<String, Integer> that maps each Trader's name with its highest Transaction value
-        Map<String, Integer> mapNameToHighestValue = new HashMap<>();
-
-
+        Map<String, Integer> mapNameToHighestValue = null;
+        //	transactions.stream()
+        //		.map(Transaction::getTrader)
+        //		.collect(groupingBy(tx -> tx.getTrader().getName()), 
+        //				mapping(tx -> tx.getValue(), toList()));
 
         assertEquals(1000, (int) mapNameToHighestValue.get("Raoul"));
         assertEquals(300, (int) mapNameToHighestValue.get("Brian"));
         assertEquals(950, (int) mapNameToHighestValue.get("Alan"));
         assertEquals(710, (int) mapNameToHighestValue.get("Mario"));
-
     }
 
     @Test
     public void testStream11(){
         //TODO: Create a Map<String, Integer> that maps each Trader's name with the sum of all its Transactions’ values
-        Map<String, Integer> mapNameToSumValue = new HashMap<>();
-
+        Map<String, Integer> mapNameToSumValue = null;
+//        		transactions.stream()
 
 
 
