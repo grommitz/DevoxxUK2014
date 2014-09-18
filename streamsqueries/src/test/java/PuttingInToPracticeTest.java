@@ -50,7 +50,7 @@ public class PuttingInToPracticeTest {
 
     @Test
     public void testStream1(){
-        //TODO: Find all transactions from year 2011 and sort them by value (small to high).
+        // Find all transactions from year 2011 and sort them by value (small to high).
         List<Transaction> transactionsYear2011 =  
         		transactions.stream()
         			.filter(t -> t.getYear() == 2011)
@@ -68,7 +68,7 @@ public class PuttingInToPracticeTest {
 
     @Test
     public void testStream2(){
-        //TODO: What are all the unique cities where the traders work?
+        // What are all the unique cities where the traders work?
         List<String> cities = transactions.stream()
         		.map(Transaction::getTrader)
         		.map(Trader::getCity)
@@ -83,7 +83,7 @@ public class PuttingInToPracticeTest {
 
     @Test
     public void testStream3(){
-        //TODO: Find all traders from Cambridge and sort them by name.
+        // Find all traders from Cambridge and sort them by name.
         List<Trader> traders = transactions.stream()
         		.map(Transaction::getTrader)
         		.filter(t -> t.getCity().equals("Cambridge"))
@@ -99,7 +99,7 @@ public class PuttingInToPracticeTest {
 
     @Test
     public void testStream4(){
-        //TODO: Return a string of all traders’ names sorted alphabetically.
+        // Return a string of all traders’ names sorted alphabetically.
         String result = transactions.stream()
         		.map(t -> t.getTrader().getName())
         		.distinct()
@@ -111,7 +111,7 @@ public class PuttingInToPracticeTest {
 
     @Test
     public void testStream5(){
-        //TODO: Are there any trader based in Milan?
+        // Are there any trader based in Milan?
         boolean milan = transactions.stream()
         		.anyMatch(t -> t.getTrader().getCity().equals("Milan"));
         		
@@ -120,7 +120,7 @@ public class PuttingInToPracticeTest {
 
     @Test
     public void testStream6(){
-        //TODO: Update all transactions so that the traders from Milan are set to Cambridge.
+        // Update all transactions so that the traders from Milan are set to Cambridge.
     	transactions.stream()
     		.filter(t -> t.getTrader().getCity().equals("Milan"))
     		.forEach(t -> t.getTrader().SetCity("Cambridge"));
@@ -131,7 +131,7 @@ public class PuttingInToPracticeTest {
 
     @Test
     public void testStream7(){
-        //TODO: What's the highest value in all the transactions?
+        // What's the highest value in all the transactions?
         int highestValue = transactions.stream()
         		.mapToInt(Transaction::getValue)
         		.max().getAsInt();
@@ -142,7 +142,7 @@ public class PuttingInToPracticeTest {
 
     @Test
     public void testStream8(){
-        //TODO: What's the transaction with smallest value?
+        // What's the transaction with smallest value?
         Transaction smallestTransaction = transactions.stream()
         		.sorted(Comparator.comparing(Transaction::getValue))
         		.findFirst().get();
@@ -152,7 +152,7 @@ public class PuttingInToPracticeTest {
 
     @Test
     public void testStream9(){
-        //TODO: Group all Traders by City
+        // Group all Traders by City
         Map<String, List<Trader>> tradersByCity = transactions.stream()
         		.map(Transaction::getTrader)
         		.distinct()
@@ -163,13 +163,15 @@ public class PuttingInToPracticeTest {
     }
 
     @Test
-    public void testStream10(){
-        //TODO: Create a Map<String, Integer> that maps each Trader's name with its highest Transaction value
-        Map<String, Integer> mapNameToHighestValue = null;
-        //	transactions.stream()
-        //		.map(Transaction::getTrader)
-        //		.collect(groupingBy(tx -> tx.getTrader().getName()), 
-        //				mapping(tx -> tx.getValue(), toList()));
+    public void testStream10() {
+        // Create a Map<String, Integer> that maps each Trader's name with its highest Transaction value
+        Map<String, Integer> mapNameToHighestValue = 
+        	transactions.stream()
+        		.collect(groupingBy(tx -> tx.getTrader().getName(), 
+        			collectingAndThen(
+        				maxBy(comparing(Transaction::getValue)),
+        				opt -> opt.map(Transaction::getValue).get())
+        			));
 
         assertEquals(1000, (int) mapNameToHighestValue.get("Raoul"));
         assertEquals(300, (int) mapNameToHighestValue.get("Brian"));
@@ -179,11 +181,11 @@ public class PuttingInToPracticeTest {
 
     @Test
     public void testStream11(){
-        //TODO: Create a Map<String, Integer> that maps each Trader's name with the sum of all its Transactions’ values
-        Map<String, Integer> mapNameToSumValue = null;
-//        		transactions.stream()
-
-
+        // Create a Map<String, Integer> that maps each Trader's name with the sum of all its Transactions’ values
+        Map<String, Integer> mapNameToSumValue =
+        	transactions.stream()
+        		.collect(groupingBy(tx -> tx.getTrader().getName(), 
+        				summingInt((Transaction tx) -> tx.getValue())));
 
         assertEquals(1400, (int) mapNameToSumValue.get("Raoul"));
         assertEquals(300, (int) mapNameToSumValue.get("Brian"));
@@ -193,20 +195,30 @@ public class PuttingInToPracticeTest {
 
     @Test
     public void testStream12(){
-        //TODO: Create a Map<Integer, Integer> that maps each year with the highest transaction value of that year
-        Map<Integer, Integer> yearToHighestValue = new HashMap<>();
-
-
+        // Create a Map<Integer, Integer> that maps each year with the highest transaction value of that year
+        Map<Integer, Integer> yearToHighestValue = //new HashMap<>();
+        		transactions.stream()
+        			.collect(groupingBy(
+        				Transaction::getYear,
+        				collectingAndThen(
+        					maxBy(comparing(Transaction::getValue)), 
+        					opttx -> opttx.map(Transaction::getValue).get())
+        		));
 
         assertEquals(1000, (int) yearToHighestValue.get(2012));
         assertEquals(400, (int) yearToHighestValue.get(2011));
-
     }
 
     @Test
     public void testStream13(){
-        //TODO: What's the transaction with highest value? (using Collectors.maxBy)
-        Transaction highestTransaction = null;
+        // What's the transaction with highest value? (using Collectors.maxBy)
+        Transaction highestTransaction = 
+        	transactions.stream()
+        		.collect(
+        				collectingAndThen(
+        						maxBy(comparing(Transaction::getValue)),
+        						Optional::get)
+        		);
 
 
         assertEquals(transactions.get(1), highestTransaction);
